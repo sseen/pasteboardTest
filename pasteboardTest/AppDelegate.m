@@ -8,6 +8,10 @@
 
 #import "AppDelegate.h"
 
+
+NSUInteger pasteboardChangeCount_;
+
+
 @interface AppDelegate ()
 
 @end
@@ -17,7 +21,31 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self
+     selector:@selector(pasteboardChangedNotification:)
+     name:UIPasteboardChangedNotification
+     object:nil]; // ios 10 有个bug 这里如果是 object:[UIPasteboard generalPasteboard]]; 就不会回掉
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self
+     selector:@selector(pasteboardChangedNotification:)
+     name:UIPasteboardRemovedNotification
+     object:[UIPasteboard generalPasteboard]];
+    
     return YES;
+}
+
+- (void)pasteboardChangedNotification:(NSNotification*)notification {
+    pasteboardChangeCount_ = [UIPasteboard generalPasteboard].changeCount;
+}
+
+- (void)applicationDidBecomeActive:(UIApplication*)application {
+    if (pasteboardChangeCount_ != [UIPasteboard generalPasteboard].changeCount) {
+        [[NSNotificationCenter defaultCenter]
+         postNotificationName:UIPasteboardChangedNotification
+         object:[UIPasteboard generalPasteboard]];
+    }
 }
 
 
@@ -37,10 +65,6 @@
     // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
 }
 
-
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-}
 
 
 - (void)applicationWillTerminate:(UIApplication *)application {
