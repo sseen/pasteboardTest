@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+static const NSTimeInterval duration = 0.3;
+
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
